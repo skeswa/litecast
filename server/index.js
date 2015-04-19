@@ -158,7 +158,7 @@ var error;
 
 app.get('/find', function(req, res) {
     var user = req.params('username');
-    for(
+    
     res.send({"users": loggedIn});
     //res.send("find");
 });
