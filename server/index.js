@@ -9,12 +9,11 @@ var app = express();
 var port = process.env.PORT || 3000;
 var net = require('net');
 var events = require('events');
-
 var morgan = require('morgan');
 
-var TYPE_REGEX = /"type"\s*:\s*"(.+)"/;
+var data = require('./data');
 
-clients = [];
+var TYPE_REGEX = /"type"\s*:\s*"(.+)"/;
 
 app.use(morgan('dev'));
 
@@ -24,16 +23,20 @@ app.use(morgan('dev'));
 /////////////////////////////////////////////
 */
 
+var respond = {
+    initSucceeded: function(sock) {
+        sock.write('{"type":"init_succeeded"}\0');
+    },
+    initFailed: function(sock, reason) {
+        sock.write('{"type":"init_failed","data":{"reason":"' + reason + '"}}\0');
+    },
+};
+
 var server = net.createServer(function(socket) {
     // Init the buffer @ 10KB
     var buff = new Buffer(10240),
         cursor = 0,
         messageEmitter = new events.EventEmitter();
-    // Identify client
-    socket.name = undefined;
-    socket.targetExists = false;
-    
-    clients.push(socket);
 
     socket.on('data', function(data) {
         for (var i = 0; i < data.length; i++) {
@@ -58,29 +61,51 @@ var server = net.createServer(function(socket) {
     });
 
     messageEmitter.on('message', function(messageText) {
+        console.log('on message:', messageText);
+
         var typeRegexResults = TYPE_REGEX.exec(messageText);
         if (typeRegexResults) {
             var typeString = typeRegexResults[1];
             switch (typeString) {
-                case 'identity':
-                    // TODO parse the JSON and read the handle and name information
+                case 'init':
+                    console.log('Initialization message received');
                     var message = JSON.parse(messageText);
-                    socket.name = message.name;
-                    socket.handle = message.handle;
-                    break;
-                case 'target':
-                    // TODO parse the JSON and read the handle information
-                    var message = JSON.parse(messageText);
-                    socket.traget = message.target;
+                    // Record identity information
+                    socket.name = message.data.from.name;
+                    socket.handle = message.data.from.handle;
+                    socket.number = message.data.from.number
+                    socket.target = message.data.to;
+                    // Validate the handle of the client
+                    if (data.findClient(socket.handle)) {
+                        respond.initFailed(socket, 'User handle has already been taken');
+                        socket.close();
+                        return;
+                    }
+                    if (data.findClient(socket.target)) {
+                        respond.initFailed(socket, 'Target user does not exist');
+                        socket.close();
+                        return;
+                    }
+                    if (data.clientIsInConvo(socket.target)) {
+                        respond.initFailed(socket, 'Target is already in a convo');
+                        socket.close();
+                        return;
+                    }
+                    // Perform registration
+                    socket.targetClient = data.findClient(socket.target);
+                    data.registerClient(socket.handle, socket);
+                    // Attempt to create a convo with the target
+                    data.createConvo(socket.handle, socket.target);
+                    // TODO inform target of new convo
+                    respond.initSucceeded(socket);
                     break;
                 case 'videoframe':
+                    console.log('Frame message received');
                     // TODO pass off to target without doing JSON parse
-                    if(targetExists(socket)) 
-                        socket.target.write(messageText);
-                    
+                    if (targetExists(socket)) socket.target.write(messageText);
                     break;
                 case 'chat':
-                    // TODO pass off to target without doing JSON parse    
+                    // TODO pass off to target without doing JSON parse
                     if(targetExists(socket))
                         socket.target.write(messageText);
                 case 'audiosnippet':
@@ -90,7 +115,7 @@ var server = net.createServer(function(socket) {
                 default:
                     // TODO print that we have no idea what the fuck happened
                     socket.write("we literally have no-idea what happened, please try again later");
-                    
+
                     break;
             }
         } else {
@@ -101,14 +126,19 @@ var server = net.createServer(function(socket) {
         }
     });
 
-    socket.on('end', function() {
-        console.log(socket.name +' has disconnected');
-        clients.splice(clients.indexOf(socket), 1);
-        //console.log("people in client " +clients);
+    socket.on('error', function() {
+        console.log(socket.name +' has disconnected due to error');
+        data.unregisterClient(socket.handle);
+        data.destroyConvoByClientHandle(socket.handle);
+        // TODO notify the other client of session dying
     });
 
-    socket.write("connected");
-    socket.pipe(socket);
+    socket.on('end', function() {
+        console.log(socket.name +' has disconnected');
+        data.unregisterClient(socket.handle);
+        data.destroyConvoByClientHandle(socket.handle);
+        // TODO notify the other client of session dying
+    });
 });
 
 //serveddr.listen(4000, '23.96.82.19');
@@ -122,7 +152,7 @@ server.listen(4000, '0.0.0.0');
 
 var loggedIn = [];
 
-app.get('/find', function(req, res) {   
+app.get('/find', function(req, res) {
     res.send({"users": loggedIn});
     //res.send("find");
 });
@@ -133,8 +163,8 @@ app.post('/login', function(req, res) {
         loggedIn.push(bodyObject);
     });
     req.on('end', function() {
-        console.log("Request complete"); 
-    });   
+        console.log("Request complete");
+    });
     res.status(200).send("done");
 });
 
@@ -144,7 +174,7 @@ app.post('/logout', function(req,res) {
         for(var i = 0; i < loggedIn.length; i++) {
             if(loggedIn[i].name === bodyObject.name) {
                 loggedIn.splice(i,1);
-            }   
+            }
         }
     });
     req.on('end', function() {
@@ -168,7 +198,7 @@ function targetExists(sender) {
     clients.forEach(function (client) {
         if(sender.targetExists || client.handle == sender.target) {
             sender.targetExists = true;
-            sender.target = client; 
+            sender.target = client;
             return true;
         }else{
             return false;
@@ -186,6 +216,6 @@ function broadcastALL(message, sender) {
 
 function broadcast(message, sender) {
     sender.pair.write(message);
-    
+
     process.stdout.write(message);
 };
