@@ -178,50 +178,17 @@ server.listen(4000, '0.0.0.0');
 ///////////////////////////////////////////////
 */
 
-var loggedIn = [];
-var error;
+var users;
 
-app.get('/find', function(req, res) {
-    var user = req.params('username');
-    
-    res.send({"users": loggedIn});
+app.get('/users', function(req, res) {
+    users = [];
+    clientmap.forEach(function (client) {
+        users.push(client.handle);
+    });    
+    res.send({"users": users});
     //res.send("find");
 });
 
-app.post('/login', function(req, res) {
-    req.on('data', function(data) {
-        error = false;
-        var bodyObject = JSON.parse(data);
-        //Checking for duplicate names before storing
-        for(var i = 0; i < loggedIn.length; i++) {
-            if(loggedIn[i].username == bodyObject.username) {
-                error = true;
-                console.log("error: "+error);  
-            }
-        }
-        if(!error)
-            loggedIn.push(bodyObject);
-    });
-    req.on('end', function() {
-        console.log("Request complete");
-    });
-    res.status(200).send({"users": loggedIn, "failed": error});
-});
-
-app.post('/logout', function(req,res) {
-    req.on('data', function(data) {
-        var bodyObject = JSON.parse(data);
-        for(var i = 0; i < loggedIn.length; i++) {
-            if(loggedIn[i].name === bodyObject.name) {
-                loggedIn.splice(i,1);
-            }
-        }
-    });
-    req.on('end', function() {
-        console.log("Request complete");
-    });
-    res.status(200).send("done");
-});
 
 app.listen(port, function() {
     console.log("server is listening on port "+port);
