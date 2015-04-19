@@ -152,3 +152,4 @@ class ChatUI:
             elif 32 <= last <= 126:
                 self.inputbuffer += chr(last)
             self.redraw_chatline()
+

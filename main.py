@@ -1,9 +1,13 @@
-
+import time
+import socket
 import sys
 import requests
 import json
 from curses import wrapper
 from ui import ChatUI
+
+from message_builder import build_init_message, build_call_message
+from stream import Connection 
 
 def main(stdscr):
     arg_length = len(sys.argv);
@@ -38,8 +42,8 @@ def main(stdscr):
 
         
         data = {'username': username, 'number': userhandle};
-        #r = requests.get("http://litecst.cloudapp.net/users");
-        #resp = json.loads(r.text);
+        r = requests.get("http://litecst.cloudapp.net/users");
+        resp = json.loads(r.text);
         #err = resp['failed'];
         #myFile = open('errorLog.txt', 'w');
         #myFile.write(str(err));
@@ -49,13 +53,12 @@ def main(stdscr):
         #if err:
             #print "That user is already logged in!";
             #exit();
-        #users = resp['users'];
+        users = resp['users'];
         
         stdscr.clear()
         ui = ChatUI(stdscr)
-        #ui.userlist.append(username)
-        #for i in users:
-        #    ui.userlist.append(i['username']);
+        for i in users:
+            ui.userlist.append(i)
         ui.userlist.append(username);
         ui.redraw_userlist()
         inp = ""
@@ -82,7 +85,11 @@ def main(stdscr):
                     dest_string = "\nInitiating call with " + destination_user + "!";
                     ui.chatbuffer_add(dest_string);
                     #call sandile's script here
-                    ui.create_video_window();
+                    #ui.create_video_window();
+                    conn = Connection();
+                    conn.write(build_init_message(username, "Vuk", userhandle));
+                    time.sleep(1);
+                    conn.write(build_call_message(dest_string));
                     dest_string = "\nSuccessfully connected to " + destination_user;
                     ui.chatbuffer_add(dest_string);
                 else:
