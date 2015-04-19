@@ -4,6 +4,10 @@ var convoMap        = {};
 var convos          = [];
 var convoCounter    = 1000;
 
+exports.listClients = function() {
+    return clientMap;
+};
+
 exports.findClient = function(handle) {
     return clientMap[handle] || null;
 };

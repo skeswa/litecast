@@ -181,12 +181,15 @@ server.listen(4000, '0.0.0.0');
 var users;
 
 app.get('/users', function(req, res) {
-    users = [];
-    clientmap.forEach(function (client) {
-        users.push(client.handle);
-    });    
-    res.send({"users": users});
-    //res.send("find");
+    console.log(data.listClients());
+    
+    /*
+    for(var key in clientmap) {
+        users.push(clientmap[key]);
+    });*/
+    var keys = Object.keys(data.listClients());
+    console.log("keys"+keys);
+    res.send({"users": keys});
 });
 
 
@@ -200,7 +203,7 @@ app.listen(port, function() {
 //                 FUNCTIONS                 //
 ///////////////////////////////////////////////
 */
-
+/*
 function targetExists(sender) {
     clients.forEach(function (client) {
         if(sender.targetExists || client.handle == sender.target) {
@@ -212,7 +215,8 @@ function targetExists(sender) {
         }
     });
 };
-
+*/
+/*
 function broadcastALL(message, sender) {
     clients.forEach(function (client) {
         if(client == sender) return;
@@ -220,7 +224,7 @@ function broadcastALL(message, sender) {
     });
     process.stdout.write(message);
 };
-
+*/
 function broadcast(message, sender) {
     sender.pair.write(message);
 
