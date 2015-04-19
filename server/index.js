@@ -154,21 +154,33 @@ server.listen(4000, '0.0.0.0');
 */
 
 var loggedIn = [];
+var error;
 
 app.get('/find', function(req, res) {
+    var user = req.params('username');
+    for(
     res.send({"users": loggedIn});
     //res.send("find");
 });
 
 app.post('/login', function(req, res) {
     req.on('data', function(data) {
+        error = false;
         var bodyObject = JSON.parse(data);
-        loggedIn.push(bodyObject);
+        //Checking for duplicate names before storing
+        for(var i = 0; i < loggedIn.length; i++) {
+            if(loggedIn[i].username == bodyObject.username) {
+                error = true;
+                console.log("error: "+error);  
+            }
+        }
+        if(!error)
+            loggedIn.push(bodyObject);
     });
     req.on('end', function() {
         console.log("Request complete");
     });
-    res.status(200).send({"users": loggedIn});
+    res.status(200).send({"users": loggedIn, "failed": error});
 });
 
 app.post('/logout', function(req,res) {
