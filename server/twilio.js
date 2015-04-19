@@ -12,13 +12,13 @@ exports.call = function(convoId) {
     var convo = data.findConvo(convoId);
     if (convo) {
         var clientHandles = convo.clients;
+        console.log('convo', convo);
         var clientNumbers = [data.findClient(clientHandles[0]).number, data.findClient(clientHandles[1]).number];
 
         client.makeCall({
             to: clientNumbers[0],
-            from: '+12676139323', 
-            url: 'http://35ec3837.ngrok.com/?convoId=' + convo.id 
-
+            from: '+12676139323',
+            url: 'http://litecst.cloudapp.net/?convoId=' + convo.id
         }, function(err, responseData) {
             if(err) { console.trace(err) }
             else{ console.log(responseData.from); }
@@ -26,9 +26,8 @@ exports.call = function(convoId) {
 
         client.makeCall({
             to: clientNumbers[1],
-            from: '+12676139323', 
-            url: 'http://35ec3837.ngrok.com/?convoId=' + convo.id 
-
+            from: '+12676139323',
+            url: 'http://litecst.cloudapp.net/?convoId=' + convo.id
         }, function(err, responseData) {
             if(err) { console.trace(err) }
             else{ console.log(responseData.from); }

@@ -1,5 +1,4 @@
 from threading import Thread
-import time
 import Queue
 import socket
 
@@ -20,7 +19,6 @@ def thread_read_stream(conn):
     dataview = memoryview(databuff)
 
     while conn.working:
-        time.sleep(1)
         count = sock.recv_into(inview, IN_BUFFER_SIZE)
         for i in xrange(count):
             byte = inbuff[i]
