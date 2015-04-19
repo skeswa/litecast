@@ -15,7 +15,6 @@ def parse_incoming_message(payload, sock):
         print("unsuccessful init")
     elif message["type"] == "call_succeeded":
         # TODO prompt the user with failure message
-        print("successful call")
         start_streaming_cam(sock)
     elif message["type"] == "call_failed":
         # TODO prompt the user with failure message
@@ -36,6 +35,7 @@ def parse_incoming_message(payload, sock):
         print("Could not place the message type: " + message["type"])
 
 def start_streaming_cam(sock):
+    print('started streaming')
     c = cam.Cam(sock)
 
 def parse_video_frame_message(payload):

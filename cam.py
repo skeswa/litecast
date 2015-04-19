@@ -13,7 +13,9 @@ def pixel_to_char(pixel):
     ramp_index = int(10 * brightness)
     return ramp[ramp_index]
 
-def draw(cam, buff, rows, columns):
+def draw(cam, buff, rows, columns, index):
+    if index % 5 == 0:
+        return
     cap = cam.cap
     ret, img = cap.read()
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -35,8 +37,10 @@ def thread_cam(cam):
     rows = cam.rows
     cols = cam.cols
     buff = bytearray(rows * cols)
+    i = 0
     while cam.working:
-        draw(cam, buff, rows, cols)
+        i = i + 1
+        draw(cam, buff, rows, cols, i)
 
 class Cam:
     def __init__(self, sock):
