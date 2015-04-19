@@ -21,8 +21,7 @@ def parse_incoming_message(payload, sock):
         # TODO prompt the user with failure message
         print("unsuccessful call")
     elif message["type"] == "call_invoked":
-        # TODO prompt the user with failure message
-        print("call invoked")
+        start_streaming_cam(sock)
     elif message["type"] == "call_ended":
         # TODO prompt the user with failure message
         print("call ended")
