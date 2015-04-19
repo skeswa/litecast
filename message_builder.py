@@ -1,20 +1,15 @@
 import json
 
-def build_identity_message(name, handle, number):
+def build_init_message(fromName, fromHandle, fromNumber, toHandle):
     return json.dumps({
-        "type": "identity",
+        "type": "init",
         "data": {
-            "name": name,
-            "handle": handle,
-            "number": number
-        }
-    })
-
-def build_target_message(handle):
-    return json.dumps({
-        "type": "target",
-        "data": {
-            "handle": handle
+            "from": {
+                "name": fromName,
+                "handle": fromHandle,
+                "number": fromNumber
+            },
+            "to": toHandle
         }
     })
 

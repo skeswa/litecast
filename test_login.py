@@ -1,7 +1,8 @@
 import socket
 
-from stream import connect, write_to_stream
-from message_builder import build_identity_message
+from stream import Connection
+from message_builder import build_init_message
 
-connect()
-write_to_stream(build_identity_message("Sandile Keswa", "me@sandile.io", "+12673128763"))
+conn = Connection()
+conn.write(build_init_message("Sandile Keswa", "skeswa", "+12673128763", "shikkic"))
+raw_input("Press Enter to continue...")
