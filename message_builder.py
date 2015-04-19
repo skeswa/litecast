@@ -1,15 +1,20 @@
 import json
 
-def build_init_message(fromName, fromHandle, fromNumber, toHandle):
+def build_init_message(name, handle, number):
     return json.dumps({
         "type": "init",
         "data": {
-            "from": {
-                "name": fromName,
-                "handle": fromHandle,
-                "number": fromNumber
-            },
-            "to": toHandle
+            "name": name,
+            "handle": handle,
+            "number": number
+        }
+    })
+
+def build_call_message(toHandle):
+    return json.dumps({
+        "type": "call",
+        "data": {
+            "handle": toHandle
         }
     })
 

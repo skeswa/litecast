@@ -31,6 +31,13 @@ var respond = {
     initFailed: function(sock, reason) {
         sock.write('{"type":"init_failed","data":{"reason":"' + reason + '"}}\0');
     },
+
+    callSucceeded: function(sock) {
+        sock.write('{"type":"call_succeeded"}\0');
+    },
+    callFailed: function(sock, reason) {
+        sock.write('{"type":"call_failed","data":{"reason":"' + reason + '"}}\0');
+    },
 };
 
 var server = net.createServer(function(socket) {
@@ -72,53 +79,71 @@ var server = net.createServer(function(socket) {
                     console.log('Initialization message received');
                     var message = JSON.parse(messageText);
                     // Record identity information
-                    socket.name = message.data.from.name;
-                    socket.handle = message.data.from.handle;
-                    socket.number = message.data.from.number
-                    socket.target = message.data.to;
+                    socket.name = message.data.name;
+                    socket.handle = message.data.handle;
+                    socket.number = message.data.number
                     // Validate the handle of the client
                     if (data.findClient(socket.handle)) {
                         respond.initFailed(socket, 'User handle has already been taken');
                         socket.close();
                         return;
                     }
-                    if (data.findClient(socket.target)) {
-                        respond.initFailed(socket, 'Target user does not exist');
-                        socket.close();
-                        return;
-                    }
-                    if (data.clientIsInConvo(socket.target)) {
-                        respond.initFailed(socket, 'Target is already in a convo');
-                        socket.close();
-                        return;
-                    }
                     // Perform registration
-                    socket.targetClient = data.findClient(socket.target);
                     data.registerClient(socket.handle, socket);
-                    // Attempt to create a convo with the target
-                    var convoId = data.createConvo(socket.handle, socket.target);
-                    // TODO inform target of new convo
                     respond.initSucceeded(socket);
+                    break;
+                case 'call':
+                    console.log('Call message received');
+                    var message = JSON.parse(messageText);
+                    var target = message.data.handle;
+                    if (!data.findClient(target)) {
+                        respond.callFailed(socket, 'Target user does not exist');
+                        socket.close();
+                        return;
+                    }
+                    if (!data.clientIsInConvo(target)) {
+                        respond.callFailed(socket, 'Target is already in a convo');
+                        socket.close();
+                        return;
+                    }
+                    // Attempt to create a convo with the target
+                    var convoId = data.createConvo(socket.handle, target);
                     // Start the twilio conference
                     twilio.call(convoId);
+                    // TODO inform target of new convo
+                    respond.callSucceeded(socket);
                     break;
                 case 'videoframe':
                     console.log('Frame message received');
                     // TODO pass off to target without doing JSON parse
-                    if (targetExists(socket)) socket.target.write(messageText);
+                    var convo = data.findConvoByClientHandle(socket.handle);
+                    if (convo) {
+                        var targetHandle;
+                        if (convo.clients[0] === socket.handle) targetHandle = convo.clients[1];
+                        else targetHandle = convo.clients[0];
+                        var targetClient = data.findClient(targetHandle);
+                        if (targetClient) {
+                            targetClient.write(messageText + '\0');
+                        }
+                    }
                     break;
                 case 'chat':
+                    console.log('Chat message received');
                     // TODO pass off to target without doing JSON parse
-                    if(targetExists(socket))
-                        socket.target.write(messageText);
-                case 'audiosnippet':
-                    // TODO pass off to target without doing JSON parse
-                    socket.target.write(messageText);
+                    var convo = data.findConvoByClientHandle(socket.handle);
+                    if (convo) {
+                        var targetHandle;
+                        if (convo.clients[0] === socket.handle) targetHandle = convo.clients[1];
+                        else targetHandle = convo.clients[0];
+                        var targetClient = data.findClient(targetHandle);
+                        if (targetClient) {
+                            targetClient.write(messageText + '\0');
+                        }
+                    }
                     break;
                 default:
                     // TODO print that we have no idea what the fuck happened
                     socket.write("we literally have no-idea what happened, please try again later");
-
                     break;
             }
         } else {

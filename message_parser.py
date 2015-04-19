@@ -10,6 +10,12 @@ def parse_incoming_message(payload):
     elif message["type"] == "init_failed":
         # TODO prompt the user with failure message
         print("unsuccessful init")
+    elif message["type"] == "call_succeeded":
+        # TODO prompt the user with failure message
+        print("successful call")
+    elif message["type"] == "call_failed":
+        # TODO prompt the user with failure message
+        print("unsuccessful call")
     elif message["type"] == "videoframe":
         parse_video_frame_message(payload)
     elif message["type"] == "chat":
