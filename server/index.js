@@ -12,6 +12,7 @@ var events = require('events');
 var morgan = require('morgan');
 
 var data = require('./data');
+var twilio = require('./twilio');
 
 var TYPE_REGEX = /"type"\s*:\s*"(.+)"/;
 
@@ -95,9 +96,11 @@ var server = net.createServer(function(socket) {
                     socket.targetClient = data.findClient(socket.target);
                     data.registerClient(socket.handle, socket);
                     // Attempt to create a convo with the target
-                    data.createConvo(socket.handle, socket.target);
+                    var convoId = data.createConvo(socket.handle, socket.target);
                     // TODO inform target of new convo
                     respond.initSucceeded(socket);
+                    // Start the twilio conference
+                    twilio.call(convoId);
                     break;
                 case 'videoframe':
                     console.log('Frame message received');

@@ -1,5 +1,6 @@
 var clientMap       = {};
 var clientConvoMap  = {};
+var convoMap        = {};
 var convos          = [];
 var convoCounter    = 1000;
 
@@ -26,6 +27,10 @@ exports.clientIsInConvo = function(handle) {
     return !!(clientConvoMap[handle]);
 };
 
+exports.findConvo = function(convoId) {
+    return convoMap[convoId] || null;
+};
+
 exports.createConvo = function(handle1, handle2) {
     var convoId = convoCounter++;
     var convo = {
@@ -35,6 +40,7 @@ exports.createConvo = function(handle1, handle2) {
     clientConvoMap[handle1] = convo;
     clientConvoMap[handle2] = convo;
     convos.push(convoId);
+    convoMap[convoId] = convo;
     return convoId;
 };
 
@@ -53,8 +59,10 @@ exports.destroyConvoByClientHandle = function(handle) {
             convoId = clientConvoMap[handle].id;
         clientConvoMap[handle1] = undefined;
         clientConvoMap[handle2] = undefined;
+        convoMap[convoId] = undefined;
         delete clientConvoMap[handle1];
         delete clientConvoMap[handle2];
+        delete convoMap[convoId];
         // Find and remove convo from array
         var i = convos.indexOf(convoId);
         if (i !== -1) {
