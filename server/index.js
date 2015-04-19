@@ -168,7 +168,7 @@ app.post('/login', function(req, res) {
     req.on('end', function() {
         console.log("Request complete");
     });
-    res.status(200).send("done");
+    res.status(200).send({"users": loggedIn});
 });
 
 app.post('/logout', function(req,res) {
