@@ -38,6 +38,13 @@ var respond = {
     callFailed: function(sock, reason) {
         sock.write('{"type":"call_failed","data":{"reason":"' + reason + '"}}\0');
     },
+
+    callInvoked: function(sock, convoId, handle, name) {
+        sock.write('{"type":"call_invoked","data":{"convoId":' + convoId + ',"caller":{"handle":"' + handle + '","name":"' + name + '"}}}\0');
+    },
+    callEnded: function(sock, convoId) {
+        sock.write('{"type":"call_ended","data":{"convoId":' + convoId + '}}\0');
+    }
 };
 
 var server = net.createServer(function(socket) {
@@ -108,14 +115,15 @@ var server = net.createServer(function(socket) {
                     }
                     // Attempt to create a convo with the target
                     var convoId = data.createConvo(socket.handle, target);
+                    // Get the target client
+                    var targetClient = data.findClient(target);
+                    respond.callInvoked(targetClient, convoId, socket.handle, socket.name);
                     // Start the twilio conference
                     twilio.call(convoId);
-                    // TODO inform target of new convo
                     respond.callSucceeded(socket);
                     break;
                 case 'videoframe':
                     console.log('Frame message received');
-                    // TODO pass off to target without doing JSON parse
                     var convo = data.findConvoByClientHandle(socket.handle);
                     if (convo) {
                         var targetHandle;
@@ -129,7 +137,6 @@ var server = net.createServer(function(socket) {
                     break;
                 case 'chat':
                     console.log('Chat message received');
-                    // TODO pass off to target without doing JSON parse
                     var convo = data.findConvoByClientHandle(socket.handle);
                     if (convo) {
                         var targetHandle;

@@ -16,6 +16,12 @@ def parse_incoming_message(payload):
     elif message["type"] == "call_failed":
         # TODO prompt the user with failure message
         print("unsuccessful call")
+    elif message["type"] == "call_invoked":
+        # TODO prompt the user with failure message
+        print("call invoked")
+    elif message["type"] == "call_ended":
+        # TODO prompt the user with failure message
+        print("call ended")
     elif message["type"] == "videoframe":
         parse_video_frame_message(payload)
     elif message["type"] == "chat":
