@@ -1,7 +1,10 @@
 import json
+import cam
+from shitter import Shitter
 
-def parse_incoming_message(payload):
-    print("Incoming payload for message parser: " + payload)
+shitter = Shitter()
+
+def parse_incoming_message(payload, sock):
     message = json.loads(payload)
     # Conditional logic for each message type
     if message["type"] == "init_succeeded":
@@ -13,6 +16,7 @@ def parse_incoming_message(payload):
     elif message["type"] == "call_succeeded":
         # TODO prompt the user with failure message
         print("successful call")
+        start_streaming_cam(sock)
     elif message["type"] == "call_failed":
         # TODO prompt the user with failure message
         print("unsuccessful call")
@@ -23,7 +27,7 @@ def parse_incoming_message(payload):
         # TODO prompt the user with failure message
         print("call ended")
     elif message["type"] == "videoframe":
-        parse_video_frame_message(payload)
+        parse_video_frame_message(message)
     elif message["type"] == "chat":
         parse_chat_message(payload)
     elif message["type"] == "audiosnippet":
@@ -32,8 +36,12 @@ def parse_incoming_message(payload):
         # TODO Freak the fuck out
         print("Could not place the message type: " + message["type"])
 
+def start_streaming_cam(sock):
+    c = cam.Cam(sock)
+
 def parse_video_frame_message(payload):
-    print('1')
+    global shitter
+    shitter.blit(payload["data"]["content"])
 
 def parse_chat_message(payload):
     print('2')

@@ -1,13 +1,20 @@
 from threading import Thread
+import cv2
 import Queue
 import socket
+
+cap = cv2.VideoCapture(0)
+
+def get_cap():
+    return cap
 
 from message_parser import parse_incoming_message
 
 DATA_BUFFER_SIZE = 10240
 IN_BUFFER_SIZE = 1024
 # SERVER_URL = 'litecst.cloudapp.net'
-SERVER_URL = '127.0.0.1'
+SERVER_URL = 'litecst.cloudapp.net'
+
 
 def thread_read_stream(conn):
     sock = conn.sock
@@ -23,7 +30,7 @@ def thread_read_stream(conn):
         for i in xrange(count):
             byte = inbuff[i]
             if byte is 0:
-                parse_incoming_message((databuff[:cursor]).decode('utf-8'))
+                parse_incoming_message((databuff[:cursor]).decode('utf-8'), sock)
                 cursor = 0
             else:
                 if cursor >= len(databuff):

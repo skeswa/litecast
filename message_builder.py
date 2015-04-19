@@ -18,15 +18,13 @@ def build_call_message(toHandle):
         }
     })
 
-def build_video_frame_message(targetHandle, senderHandle, width, height, data):
+def build_video_frame_message(width, height, data):
     return json.dumps({
         "type": "videoframe",
         "data": {
             "content": data,
             "width": width,
-            "height": height,
-            "to": targetHandle,
-            "from": senderHandle
+            "height": height
         }
     })
 
