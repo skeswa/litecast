@@ -14,8 +14,6 @@ def pixel_to_char(pixel):
     return ramp[ramp_index]
 
 def draw(cam, buff, rows, columns, index):
-    if index % 2 == 0:
-        return
     cap = cam.cap
     ret, img = cap.read()
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
