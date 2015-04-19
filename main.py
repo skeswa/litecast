@@ -37,17 +37,26 @@ def main(stdscr):
         userhandle = sys.argv[user_index];
 
         
-        data = {'username': username, 'handle': userhandle};
-        r = requests.post("http://litecst.cloudapp.net/login", data=json.dumps(data));
-        #users = json.loads(r.text);
-        #users = users['users'];
+        data = {'username': username, 'number': userhandle};
+        #r = requests.get("http://litecst.cloudapp.net/users");
+        #resp = json.loads(r.text);
+        #err = resp['failed'];
+        #myFile = open('errorLog.txt', 'w');
+        #myFile.write(str(err));
+        #myFile.close();
+        #exit();
+        #error_s = resp['failed'];
+        #if err:
+            #print "That user is already logged in!";
+            #exit();
+        #users = resp['users'];
         
         stdscr.clear()
         ui = ChatUI(stdscr)
-        ui.userlist.append(username)
+        #ui.userlist.append(username)
         #for i in users:
-        #    ui.userlist.append(i['user']);
-        
+        #    ui.userlist.append(i['username']);
+        ui.userlist.append(username);
         ui.redraw_userlist()
         inp = ""
         ui.chatbuffer_add("Welcome to LiteCast!");
@@ -63,13 +72,21 @@ def main(stdscr):
                 ui.chatbuffer_add("To call someone type '/call <username>'");
             else:
             #check to see if the user is logged in, if so call them
-                destination_user = inp.index('/call') + 5;
+                destination_user = inp.index('/call') + 6;
                 destination_user = inp[destination_user:];
-                if not destination_user in ui.userlist:
-                    print "\nThat user isn't currently logged in!";
-                else: 
+                temp_string = destination_user + " " + str(ui.userlist);
+                ui.chatbuffer_add(temp_string);
+                temp_string = "";
+                #ui.chatbuffer_add(destination_user);
+                if destination_user in ui.userlist:
                     dest_string = "\nInitiating call with " + destination_user + "!";
                     ui.chatbuffer_add(dest_string);
                     #call sandile's script here
+                    ui.create_video_window();
+                    dest_string = "\nSuccessfully connected to " + destination_user;
+                    ui.chatbuffer_add(dest_string);
+                else:
+                    ui.chatbuffer_add("That user isn't currently logged in!");
+                    destination_user = "";
 
 wrapper(main);

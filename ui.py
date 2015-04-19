@@ -10,7 +10,7 @@ class ChatUI:
 
         # Curses, why must you confuse me with your height, width, y, x
         userlist_hwyx = (curses.LINES - 2, userlist_width - 1, 0, 0)
-        chatbuffer_hwyx = (curses.LINES - 2, curses.COLS-userlist_width-1,
+        chatbuffer_hwyx = (curses.LINES - 2, curses.COLS-userlist_width-20,
                            0, userlist_width + 1)
         chatline_yx = (curses.LINES - 1, 0)
         self.win_userlist = stdscr.derwin(*userlist_hwyx)
@@ -39,10 +39,12 @@ class ChatUI:
     def redraw_ui(self):
         """Redraws the entire UI"""
         h, w = self.stdscr.getmaxyx()
+        #h, w = 50, 100;
         u_h, u_w = self.win_userlist.getmaxyx()
+        #u_h, u_w = 50, 100;
         self.stdscr.clear()
         self.stdscr.vline(0, u_w + 1, "|", h - 2)
-        self.stdscr.hline(h - 2, 0, "-", w)
+        self.stdscr.hline(h - 2, 0, "-", w - 2)
         self.stdscr.refresh()
 
         self.redraw_userlist()
@@ -82,6 +84,15 @@ class ChatUI:
             j += 1
         self.win_chatbuffer.refresh()
 
+    def create_video_window(self):
+        #h, w = self.stdscr.getmaxyx();
+        #u_h, u_w = self.win_userlist.getmaxyx();
+        #self.stdscr.clear();
+        box1 = curses.newwin(35, 50, 10, 100);
+        box1.addstr(2, 2, "Hello, World");
+        box1.box();
+        box1.refresh();
+        self.stdscr.refresh();
     def chatbuffer_add(self, msg):
         """
 
