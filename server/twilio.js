@@ -1,4 +1,4 @@
-var client = require('twilio')('AC269eb6f2d2f67121384399208e6bf660', '8904b9dfd4f9ca6cd98446530787c6bf');
+var client = require('twilio')(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
 var data = require('./data');
 
 exports.setup = function(app) {
