@@ -8,6 +8,8 @@
 ###
 
 import sys
+import requests
+import json
 
 def main():
     arg_length = len(sys.argv);
@@ -40,8 +42,9 @@ def main():
         username = sys.argv[name_index];
         userhandle = sys.argv[user_index];
 
-        print "Username: ", username, " User handle: ", userhandle;
         
-
+        data = {'username': username, 'handle': userhandle};
+        r = requests.post("http://litecst.cloudapp.net/login", data=json.dumps(data));
+        print "Login info sent. ", r.text;
 
 main();
