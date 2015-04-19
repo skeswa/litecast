@@ -14,7 +14,7 @@ def pixel_to_char(pixel):
     return ramp[ramp_index]
 
 def draw(cam, buff, rows, columns, index):
-    if index % 5 == 0:
+    if index % 2 == 0:
         return
     cap = cam.cap
     ret, img = cap.read()
