@@ -59,3 +59,6 @@ target/
 /include/
 /lib/
 node_modules/
+
+# Custom
+/server/server
